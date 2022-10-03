@@ -19,28 +19,18 @@ body {
   margin-bottom: 16px;
 }
 
-.country-list {
-  list-style-type: none;
-  font-size: 30px;
-  padding: 0;
+.galleryList__img,
+.countryInfo__img {
+  width: 50px;
 }
 
-.list__item {
+.galleryList__header {
   display: flex;
-  align-items: center;
+  gap: 10px;
 }
 
-.list__name {
-  padding-left: 15px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-
-.info__name {
-  font-size: 45px;
-  padding-left: 15px;
-}
-
-.info__data {
-  font-size: 21px;
+.countryInfo__header {
+  display: flex;
+  gap: 10px;
+  font-size: 40px;
 }

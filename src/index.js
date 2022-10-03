@@ -1,75 +1,66 @@
-'use strict';
 import './css/styles.css';
-import Notiflix from 'notiflix';
 import { fetchCountries } from './fetchCountries';
 import debounce from 'lodash.debounce';
-const DEBOUNCE_DELAY = 300;
+import Notiflix from 'notiflix';
 
-const searchBox = document.querySelector('#search-box');
-const countryList = document.querySelector('.country-list');
+const inputBox = document.querySelector('#search-box');
+const countryListGallery = document.querySelector('.country-list');
 const countryInfo = document.querySelector('.country-info');
 
-const findCountry = () => {
-  let name = searchBox.value.trim();
+const DEBOUNCE_DELAY = 300;
 
-  if (name === '') {
-    Notiflix.Notify.info('Please type in a country name');
-    countryList.innerHTML = '';
-    countryInfo.innerHTML = '';
-  } else {
-    fetchCountries(name)
-      .then(data => {
-        console.log(data);
-        console.log(data.length);
-        if (data.length > 10) {
-          Notiflix.Notify.info(
-            'Too many matches found. Please enter a more specific name.'
-          );
-          countryList.innerHTML = '';
-          countryInfo.innerHTML = '';
-        } else if (data.length <= 10 && data.length >= 2) {
-          renderList(data);
-          countryInfo.innerHTML = '';
-        } else if ((data.length = 1)) {
-          renderInfo(data);
-          countryList.innerHTML = '';
-        }
-      })
-      .catch(error => {
-        Notiflix.Notify.failure('Oops, there is no country with that name');
-        countryList.innerHTML = '';
-        countryInfo.innerHTML = '';
-      });
+inputBox.addEventListener('input', debounce(searchCountry, DEBOUNCE_DELAY));
+
+function searchCountry() {
+  if (inputBox.value === '') {
+    clearInputs();
+    Notiflix.Notify.info('Please fill out the form');
   }
-};
 
-const renderList = data => {
-  const markup = data
-    .map(d => {
-      return `<li class="list__item">
-      <img class="list__flag" src="${d.flag}" alt="Flag of ${d.name}" width="55" >
-      <p class="list__name">${d.name}</p>
-      </li>`;
-    })
-    .join('');
-  countryList.innerHTML = markup;
-};
+  fetchCountries(inputBox.value.trim())
+    .then(res => renderCountries(res))
+    .catch(() =>
+      Notiflix.Notify.failure('Oops, there is no country with that name')
+    );
+}
 
-const renderInfo = data => {
-  const markup = data
-    .map(d => {
-      return `<img class="info__flag" src="${d.flag}" alt="Flag of ${
-        d.name
-      }" width="55" >
-      <span class="info__name">${d.name}</span>
-      <p class="info__data"><b>Capital</b>: ${d.capital}</p>
-      <p class="info__data"><b>Population</b>: ${d.population}</p>
-      <p class="info__data"><b>Languages</b>: ${d.languages.map(
-        language => ' ' + language.name
-      )}</p>`;
-    })
-    .join('');
-  countryInfo.innerHTML = markup;
-};
+function renderCountries(countries) {
+  if (countries.length > 10) {
+    clearInputs();
+    Notiflix.Notify.info(
+      'Too many matches found. Please enter a more specific name.'
+    );
+  } else if (countries.length >= 2 && countries.length <= 10) {
+    clearInputs();
+    const markup = countries
+      .map(({ flags, name }) => {
+        return `<h2 class="galleryList__header"><img class="galleryList__img" src="${flags.svg}"/>${name.common}</h2>`;
+      })
+      .join('');
 
-searchBox.addEventListener('input', debounce(findCountry, DEBOUNCE_DELAY));
+    countryListGallery.innerHTML = markup;
+  } else if (countries.length === 1) {
+    clearInputs();
+    const markup = countries
+      .map(({ flags, name, capital, population, languages }) => {
+        return `<div>
+        <h2 class="countryInfo__header"><img class="countryInfo__img" src="${
+          flags.svg
+        }"/>${name.common}</h2>
+        <p class="countryInfo__item"><b>Capital: </b>${capital}</p>
+        <p class="countryInfo__item"><b>Population: </b>${population}</p>
+        <p class="countryInfo__item"><b>Languages: </b>${Object.values(
+          languages
+        )}</p>
+        </div>`;
+      })
+      .join('');
+
+    countryInfo.innerHTML = markup;
+  }
+}
+
+function clearInputs() {
+  countryListGallery.innerHTML = '';
+  countryInfo.innerHTML = '';
+}
